@@ -1,0 +1,19 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 2em;
+  background: #f0f8ff;
+}
+
+button {
+  padding: 0.5em 1em;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 1em 0;
+}
+
+#weather {
+  margin-top: 1em;
+  font-size: 18px;
+  line-height: 1.6;
+}
