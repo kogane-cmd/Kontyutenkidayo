@@ -1,27 +1,22 @@
 body {
-  font-family: sans-serif;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom, #e0f7fa, #ffffff);
   text-align: center;
   padding: 2em;
-  background: #f0f8ff;
 }
 
-button {
-  padding: 0.5em 1em;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 1em 0;
-  background-color: #aee1f9;
-  border: none;
-  border-radius: 8px;
-  transition: background-color 0.3s;
+h1 {
+  color: #00796b;
+  margin-bottom: 1em;
 }
 
-button:hover {
-  background-color: #7ec8e3;
-}
-
-#weather {
-  margin-top: 1em;
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 2em;
+  max-width: 500px;
+  margin: 0 auto;
   font-size: 18px;
   line-height: 1.6;
 }
