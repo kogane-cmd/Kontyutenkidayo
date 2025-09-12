@@ -1,3 +1,5 @@
+window.addEventListener("DOMContentLoaded", getWeatherJMA);
+
 async function getWeatherJMA() {
   const url = "https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json";
 
@@ -11,8 +13,6 @@ async function getWeatherJMA() {
     const weatherTomorrow = area.weathers[1];
     const windToday = area.winds[0];
     const windTomorrow = area.winds[1];
-    const waveToday = area.waves[0];
-    const waveTomorrow = area.waves[1];
 
     const bugHuntingToday = isGoodForBugHunting(weatherToday, windToday)
       ? "◎ 虫取りに適しています！"
@@ -24,14 +24,13 @@ async function getWeatherJMA() {
 
     document.getElementById("weather").innerHTML = `
       <h2>今日（${formatDate(dates[0])}）</h2>
-      <p>天気：${weatherToday}</p>
+      <p>天気：${weatherToday} ${getWeatherIcon(weatherToday)}</p>
       <p>風：${windToday}</p>
-      <p>波：${waveToday}</p>
       <p>${bugHuntingToday}</p>
+      <hr>
       <h2>明日（${formatDate(dates[1])}）</h2>
-      <p>天気：${weatherTomorrow}</p>
+      <p>天気：${weatherTomorrow} ${getWeatherIcon(weatherTomorrow)}</p>
       <p>風：${windTomorrow}</p>
-      <p>波：${waveTomorrow}</p>
       <p>${bugHuntingTomorrow}</p>
     `;
   } catch (e) {
@@ -47,4 +46,12 @@ function formatDate(isoString) {
 
 function isGoodForBugHunting(weather, wind) {
   return weather.includes("晴") && !wind.includes("強い");
+}
+
+function getWeatherIcon(weather) {
+  if (weather.includes("晴")) return "☀️";
+  if (weather.includes("曇")) return "⛅";
+  if (weather.includes("雨")) return "🌧️";
+  if (weather.includes("雪")) return "❄️";
+  return "🌈";
 }
