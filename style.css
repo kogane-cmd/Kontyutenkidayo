@@ -10,13 +10,18 @@ h1 {
   margin-bottom: 1em;
 }
 
+label, select {
+  font-size: 16px;
+  margin-bottom: 1em;
+}
+
 .card {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   padding: 2em;
   max-width: 500px;
-  margin: 0 auto;
+  margin: 1em auto;
   font-size: 18px;
   line-height: 1.6;
 }
