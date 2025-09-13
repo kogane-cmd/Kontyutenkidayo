@@ -1,7 +1,13 @@
-window.addEventListener("DOMContentLoaded", getWeatherJMA);
+document.getElementById("pref").addEventListener("change", () => {
+  getWeatherJMA(document.getElementById("pref").value);
+});
 
-async function getWeatherJMA() {
-  const url = "https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json";
+window.addEventListener("DOMContentLoaded", () => {
+  getWeatherJMA(document.getElementById("pref").value);
+});
+
+async function getWeatherJMA(code) {
+  const url = `https://www.jma.go.jp/bosai/forecast/data/forecast/${code}.json`;
 
   try {
     const res = await fetch(url);
@@ -14,11 +20,16 @@ async function getWeatherJMA() {
     const windToday = area.winds[0];
     const windTomorrow = area.winds[1];
 
-    const bugHuntingToday = isGoodForBugHunting(weatherToday, windToday)
+    const tempArea = data[1].timeSeries[0].areas[0];
+    const temps = tempArea.temps;
+    const humidityArea = data[1].timeSeries[1].areas[0];
+    const humidities = humidityArea.humidity;
+
+    const bugHuntingToday = isGoodForBugHunting(weatherToday, windToday, temps[0], humidities[0])
       ? "◎ 虫取りに適しています！"
       : "△ 虫取りにはあまり向いていません。";
 
-    const bugHuntingTomorrow = isGoodForBugHunting(weatherTomorrow, windTomorrow)
+    const bugHuntingTomorrow = isGoodForBugHunting(weatherTomorrow, windTomorrow, temps[1], humidities[1])
       ? "◎ 虫取りに適しています！"
       : "△ 虫取りにはあまり向いていません。";
 
@@ -26,11 +37,17 @@ async function getWeatherJMA() {
       <h2>今日（${formatDate(dates[0])}）</h2>
       <p>天気：${weatherToday} ${getWeatherIcon(weatherToday)}</p>
       <p>風：${windToday}</p>
+      <p><span style="color:red;">最高気温：${temps[0]}℃</span></p>
+      <p><span style="color:blue;">最低気温：${temps[2]}℃</span></p>
+      <p>湿度：${humidities[0]}%</p>
       <p>${bugHuntingToday}</p>
       <hr>
       <h2>明日（${formatDate(dates[1])}）</h2>
       <p>天気：${weatherTomorrow} ${getWeatherIcon(weatherTomorrow)}</p>
       <p>風：${windTomorrow}</p>
+      <p><span style="color:red;">最高気温：${temps[1]}℃</span></p>
+      <p><span style="color:blue;">最低気温：${temps[3]}℃</span></p>
+      <p>湿度：${humidities[1]}%</p>
       <p>${bugHuntingTomorrow}</p>
     `;
   } catch (e) {
@@ -44,8 +61,17 @@ function formatDate(isoString) {
   return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
-function isGoodForBugHunting(weather, wind) {
-  return weather.includes("晴") && !wind.includes("強い");
+function isGoodForBugHunting(weather, wind, temp, humidity) {
+  const tempNum = parseInt(temp);
+  const humidityNum = parseInt(humidity);
+  return (
+    weather.includes("晴") &&
+    !wind.includes("強い") &&
+    tempNum >= 20 &&
+    tempNum <= 30 &&
+    humidityNum >= 40 &&
+    humidityNum <= 80
+  );
 }
 
 function getWeatherIcon(weather) {
