@@ -2,11 +2,20 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>東京の虫取り天気</title>
+  <title>虫取り天気</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>東京の虫取り天気 🪲</h1>
+  <h1>虫取り天気 🪲</h1>
+  <label for="pref">都道府県を選んでね：</label>
+  <select id="pref">
+    <option value="130000">東京</option>
+    <option value="270000">大阪</option>
+    <option value="140000">神奈川</option>
+    <option value="010000">北海道</option>
+    <option value="230000">愛知</option>
+    <!-- 必要に応じて追加 -->
+  </select>
   <div id="weather" class="card">読み込み中...</div>
   <script src="script.js"></script>
 </body>
