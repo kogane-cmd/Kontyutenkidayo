@@ -1,9 +1,12 @@
-document.getElementById("pref").addEventListener("change", () => {
-  getWeatherJMA(document.getElementById("pref").value);
+const select = document.getElementById("pref");
+
+select.addEventListener("change", () => {
+  const code = select.value;
+  getWeatherJMA(code);
 });
 
 window.addEventListener("DOMContentLoaded", () => {
-  getWeatherJMA(document.getElementById("pref").value);
+  getWeatherJMA(select.value);
 });
 
 async function getWeatherJMA(code) {
@@ -13,17 +16,19 @@ async function getWeatherJMA(code) {
     const res = await fetch(url);
     const data = await res.json();
 
-    const area = data[0].timeSeries[0].areas[0];
-    const dates = data[0].timeSeries[0].timeDefines;
-    const weatherToday = area.weathers[0];
-    const weatherTomorrow = area.weathers[1];
-    const windToday = area.winds[0];
-    const windTomorrow = area.winds[1];
+    const area = data[0]?.timeSeries?.[0]?.areas?.[0];
+    const dates = data[0]?.timeSeries?.[0]?.timeDefines || [];
 
-    const tempArea = data[1].timeSeries[0].areas[0];
-    const temps = tempArea.temps;
-    const humidityArea = data[1].timeSeries[1].areas[0];
-    const humidities = humidityArea.humidity;
+    const weatherToday = area?.weathers?.[0] || "不明";
+    const weatherTomorrow = area?.weathers?.[1] || "不明";
+    const windToday = area?.winds?.[0] || "不明";
+    const windTomorrow = area?.winds?.[1] || "不明";
+
+    const tempArea = data[1]?.timeSeries?.[0]?.areas?.[0];
+    const temps = tempArea?.temps || ["--", "--", "--", "--"];
+
+    const humidityArea = data[1]?.timeSeries?.[1]?.areas?.[0];
+    const humidities = humidityArea?.humidity || ["--", "--"];
 
     const bugHuntingToday = isGoodForBugHunting(weatherToday, windToday, temps[0], humidities[0])
       ? "◎ 虫取りに適しています！"
@@ -57,6 +62,7 @@ async function getWeatherJMA(code) {
 }
 
 function formatDate(isoString) {
+  if (!isoString) return "--月--日";
   const date = new Date(isoString);
   return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
@@ -67,10 +73,8 @@ function isGoodForBugHunting(weather, wind, temp, humidity) {
   return (
     weather.includes("晴") &&
     !wind.includes("強い") &&
-    tempNum >= 20 &&
-    tempNum <= 30 &&
-    humidityNum >= 40 &&
-    humidityNum <= 80
+    !isNaN(tempNum) && tempNum >= 20 && tempNum <= 30 &&
+    !isNaN(humidityNum) && humidityNum >= 40 && humidityNum <= 80
   );
 }
 
