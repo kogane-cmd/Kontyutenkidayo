@@ -3,7 +3,7 @@ const LON = 139.6917;
 
 async function loadWeather() {
   const adviceEl = document.getElementById("advice");
-  adviceEl.textContent = "読み込み中…";
+  adviceEl.textContent = "読み込み中？";
 
   const url =
     `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
