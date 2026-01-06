@@ -1,14 +1,3 @@
-const select = document.getElementById("pref");
-
-select.addEventListener("change", () => {
-  const code = select.value;
-  getWeatherJMA(code);
-});
-
-window.addEventListener("DOMContentLoaded", () => {
-  getWeatherJMA(select.value);
-});
-
 async function getWeatherJMA(code) {
   const url = `https://www.jma.go.jp/bosai/forecast/data/forecast/${code}.json`;
 
@@ -24,11 +13,25 @@ async function getWeatherJMA(code) {
     const windToday = area?.winds?.[0] || "不明";
     const windTomorrow = area?.winds?.[1] || "不明";
 
-    const tempArea = data[1]?.timeSeries?.[0]?.areas?.[0];
-    const temps = tempArea?.temps || ["--", "--", "--", "--"];
+    // ---------- 🔍 temps を持ってる timeSeries を探す ----------
+    let temps = ["--","--","--","--"];
+    for (const ts of data[1].timeSeries) {
+      const a = ts.areas?.[0];
+      if (a?.temps) {
+        temps = a.temps;
+        break;
+      }
+    }
 
-    const humidityArea = data[1]?.timeSeries?.[1]?.areas?.[0];
-    const humidities = humidityArea?.humidity || ["--", "--"];
+    // ---------- 🔍 湿度（ほぼ無いので fallback付き） ----------
+    let humidities = ["--","--"];
+    for (const ts of data[1].timeSeries) {
+      const a = ts.areas?.[0];
+      if (a?.humidity) {
+        humidities = a.humidity;
+        break;
+      }
+    }
 
     const bugHuntingToday = isGoodForBugHunting(weatherToday, windToday, temps[0], humidities[0])
       ? "◎ 虫取りに適しています！"
@@ -59,29 +62,4 @@ async function getWeatherJMA(code) {
     document.getElementById("weather").innerHTML = `<p>天気情報の取得に失敗しました。</p>`;
     console.error("エラー:", e);
   }
-}
-
-function formatDate(isoString) {
-  if (!isoString) return "--月--日";
-  const date = new Date(isoString);
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
-}
-
-function isGoodForBugHunting(weather, wind, temp, humidity) {
-  const tempNum = parseInt(temp);
-  const humidityNum = parseInt(humidity);
-  return (
-    weather.includes("晴") &&
-    !wind.includes("強い") &&
-    !isNaN(tempNum) && tempNum >= 20 && tempNum <= 30 &&
-    !isNaN(humidityNum) && humidityNum >= 40 && humidityNum <= 80
-  );
-}
-
-function getWeatherIcon(weather) {
-  if (weather.includes("晴")) return "☀️";
-  if (weather.includes("曇")) return "⛅";
-  if (weather.includes("雨")) return "🌧️";
-  if (weather.includes("雪")) return "❄️";
-  return "🌈";
 }
