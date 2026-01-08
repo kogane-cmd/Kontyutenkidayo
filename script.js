@@ -22,14 +22,14 @@ async function getWeather(cityId) {
 
     const today = data.forecasts[0];
     const tomorrow = data.forecasts[1];
-    const dayAfter = data.forecasts[2]; // ← 明後日
+    const dayAfter = data.forecasts[2]; // 明後日
 
     weatherBox.innerHTML = `
-      ${makeDayBlock(today)}
+      ${makeDayBlock(today, 0)}
       <hr>
-      ${makeDayBlock(tomorrow)}
+      ${makeDayBlock(tomorrow, 1)}
       <hr>
-      ${makeDayBlock(dayAfter)}
+      ${makeDayBlock(dayAfter, 2)}
     `;
   } catch (e) {
     weatherBox.innerHTML = "天気情報の取得に失敗しました。";
@@ -37,15 +37,16 @@ async function getWeather(cityId) {
   }
 }
 
-/* ===== 1日分の表示を作る ===== */
-function makeDayBlock(day) {
-  const max = day.temperature.max?.celsius || "--";
-  const min = day.temperature.min?.celsius || "--";
+/* ===== 1日分の表示 ===== */
+function makeDayBlock(day, offset) {
+  const max = day.temperature.max?.celsius ?? "--";
+  const min = day.temperature.min?.celsius ?? "--";
   const rain = getRainText(day.chanceOfRain);
   const advice = getBugAdvice(day.telop, max);
+  const dateText = makeDateText(offset);
 
   return `
-    <h2>${day.dateLabel}</h2>
+    <h2>${dateText}</h2>
     <p>天気：${day.telop} ${getIcon(day.telop)}</p>
 
     <p><span style="color:red;">最高気温：${max}℃</span></p>
@@ -54,6 +55,21 @@ function makeDayBlock(day) {
     <p>降水確率：${rain}</p>
     <p><b>${advice}</b></p>
   `;
+}
+
+/* ===== 今日・明日・明後日の日付 ===== */
+function makeDateText(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+
+  if (offset === 0) return `今日（${m}月${day}日）`;
+  if (offset === 1) return `明日（${m}月${day}日）`;
+  if (offset === 2) return `明後日（${m}月${day}日）`;
+
+  return `${m}月${day}日`;
 }
 
 /* ===== 天気アイコン ===== */
