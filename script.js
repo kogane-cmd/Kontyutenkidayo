@@ -22,46 +22,41 @@ async function getWeather(cityId) {
 
     const today = data.forecasts[0];
     const tomorrow = data.forecasts[1];
-
-    const todayMax = today.temperature.max?.celsius || "--";
-    const todayMin = today.temperature.min?.celsius || "--";
-    const tomorrowMax = tomorrow.temperature.max?.celsius || "--";
-    const tomorrowMin = tomorrow.temperature.min?.celsius || "--";
-
-    const todayRain = getRainText(today.chanceOfRain);
-    const tomorrowRain = getRainText(tomorrow.chanceOfRain);
-
-    const todayAdvice = getBugAdvice(today.telop, todayMax);
-    const tomorrowAdvice = getBugAdvice(tomorrow.telop, tomorrowMax);
+    const dayAfter = data.forecasts[2]; // ← 明後日
 
     weatherBox.innerHTML = `
-      <h2>今日（${today.dateLabel}）</h2>
-      <p>天気：${today.telop} ${getIcon(today.telop)}</p>
-
-      <p><span style="color:red;">最高気温：${todayMax}℃</span></p>
-      <p><span style="color:blue;">最低気温：${todayMin}℃</span></p>
-
-      <p>降水確率：${todayRain}</p>
-      <p><b>${todayAdvice}</b></p>
-
+      ${makeDayBlock(today)}
       <hr>
-
-      <h2>明日（${tomorrow.dateLabel}）</h2>
-      <p>天気：${tomorrow.telop} ${getIcon(tomorrow.telop)}</p>
-
-      <p><span style="color:red;">最高気温：${tomorrowMax}℃</span></p>
-      <p><span style="color:blue;">最低気温：${tomorrowMin}℃</span></p>
-
-      <p>降水確率：${tomorrowRain}</p>
-      <p><b>${tomorrowAdvice}</b></p>
+      ${makeDayBlock(tomorrow)}
+      <hr>
+      ${makeDayBlock(dayAfter)}
     `;
   } catch (e) {
-    weatherBox.innerHTML = `天気情報の取得に失敗しました。`;
+    weatherBox.innerHTML = "天気情報の取得に失敗しました。";
     console.error(e);
   }
 }
 
-// かわいい天気アイコン
+/* ===== 1日分の表示を作る ===== */
+function makeDayBlock(day) {
+  const max = day.temperature.max?.celsius || "--";
+  const min = day.temperature.min?.celsius || "--";
+  const rain = getRainText(day.chanceOfRain);
+  const advice = getBugAdvice(day.telop, max);
+
+  return `
+    <h2>${day.dateLabel}</h2>
+    <p>天気：${day.telop} ${getIcon(day.telop)}</p>
+
+    <p><span style="color:red;">最高気温：${max}℃</span></p>
+    <p><span style="color:blue;">最低気温：${min}℃</span></p>
+
+    <p>降水確率：${rain}</p>
+    <p><b>${advice}</b></p>
+  `;
+}
+
+/* ===== 天気アイコン ===== */
 function getIcon(weather) {
   if (weather.includes("晴")) return "☀️";
   if (weather.includes("曇")) return "⛅";
@@ -70,7 +65,7 @@ function getIcon(weather) {
   return "🌈";
 }
 
-// 降水確率まとめ
+/* ===== 降水確率（最大値） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
@@ -83,19 +78,17 @@ function getRainText(obj) {
 
   if (arr.length === 0) return "--%";
 
-  // 1番高い降水確率だけ表示
   const max = Math.max(...arr.map(v => parseInt(v)));
   return `${max}%`;
 }
 
-// 🐞虫取りアドバイス
+/* ===== 🐞虫取り判定 ===== */
 function getBugAdvice(weather, maxTemp) {
   if (weather.includes("雨") || weather.includes("雪")) {
     return "✕ 雨・雪は虫取りに不向きです";
   }
 
   const t = parseInt(maxTemp);
-
   if (isNaN(t)) return "△ 情報不足で判断できません";
 
   if (t >= 22 && t <= 32) return "◎ とても虫取りに向いています！";
