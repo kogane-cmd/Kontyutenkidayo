@@ -38,7 +38,7 @@ async function getWeather(cityId) {
       ${makeDayBlock(dayAfter, 2)}
     `;
   } catch (e) {
-    weatherBox.innerHTML = "天気情報の取得に失敗しました。";
+    weatherBox.innerHTML = "天気の取得に失敗しました。";
     console.error(e);
   }
 }
