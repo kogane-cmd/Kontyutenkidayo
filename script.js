@@ -12,19 +12,14 @@ window.addEventListener("DOMContentLoaded", () => {
 async function getWeather(cityId) {
   weatherBox.innerHTML = "読み込み中...";
 
-  // 1. 取得したい天気予報APIのURL
-  const targetUrl = `https://tsukumijima.net{cityId}`;
-  
-  // 2. iPadやGitHub Pagesでのセキュリティブロックを回避するための仲介プロキシURL
-  const url = `https://allorigins.win{encodeURIComponent(targetUrl)}`;
+  // シンプルにAPIへ直接リクエストを送ります（API自体がCORS許可されています）
+  const url = `https://tsukumijima.net{cityId}`;
 
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP Error");
 
-    // プロキシを経由した場合、データは「contents」という文字列の箱に入って届きます
-    const wrapper = await res.json();
-    const data = JSON.parse(wrapper.contents); 
+    const data = await res.json();
 
     const today = data.forecasts[0];
     const tomorrow = data.forecasts[1];
@@ -43,8 +38,10 @@ async function getWeather(cityId) {
   }
 }
 
-/* ===== 1日分の表示（スキマを詰めてスマートにする） ===== */
+/* ===== 1日分の表示（無駄な隙間をなくしてiPadでも見やすく） ===== */
 function makeDayBlock(day, offset) {
+  if (!day) return `<h2>データがありません</h2>`;
+
   const max = day.temperature.max?.celsius ?? "--";
   const min = day.temperature.min?.celsius ?? "--";
   const rain = getRainText(day.chanceOfRain);
@@ -82,6 +79,7 @@ function makeDateText(offset) {
 
 /* ===== 天気アイコン ===== */
 function getIcon(weather) {
+  if (!weather) return "🌈";
   if (weather.includes("晴")) return "☀️";
   if (weather.includes("曇")) return "⛅";
   if (weather.includes("雨")) return "🌧️";
@@ -89,10 +87,11 @@ function getIcon(weather) {
   return "🌈";
 }
 
-/* ===== 降水確率（「%」マークや時間経過の「--」を完全回避する処理） ===== */
+/* ===== 降水確率（「%」マーク混在バグや「--」によるNaNを完全に防ぐ） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
+  // 各時間帯のデータを配列としてまとめる
   const rawValues = [
     obj.T00_06,
     obj.T06_12,
@@ -105,29 +104,33 @@ function getRainText(obj) {
   for (let i = 0; i < rawValues.length; i++) {
     let val = rawValues[i];
     
+    // データが存在し、かつ「--」ではない有効な予報データのみを抽出
     if (val !== undefined && val !== null && val !== "--" && val !== "") {
-      // 文字列に含まれる「%」を綺麗に消去（例: "30%" -> "30"）
+      // 文字列として届く「"10%"」から「%」を除去して「"10"」にする
       if (typeof val === "string") {
         val = val.replace("%", "");
       }
       
       const num = parseInt(val);
+      // 正しく数字に変換できたら配列に追加
       if (!isNaN(num)) {
         validNumbers.push(num);
       }
     }
   }
 
-  // 過去の時間帯が過ぎてすべての予報が終了した場合は「--%」にする
+  // 夜間などで、これ以降の有効な数字が一つもない場合は「--%」を返す
   if (validNumbers.length === 0) return "--%";
 
-  // 正常な数値のみの中から最大の降水確率を割り出す
+  // 正常な数字の中から最も高い降水確率を出力
   const max = Math.max(...validNumbers);
   return `${max}%`;
 }
 
 /* ===== 🐞虫取り判定 ===== */
 function getBugAdvice(weather, maxTemp) {
+  if (!weather) return "△ 情報不足で判断できません";
+  
   if (weather.includes("雨") || weather.includes("雪")) {
     return "✕ 雨・雪は虫取りに不向きです";
   }
