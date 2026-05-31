@@ -12,7 +12,6 @@ window.addEventListener("DOMContentLoaded", () => {
 async function getWeather(cityId) {
   weatherBox.innerHTML = "読み込み中...";
 
-  // シンプルにAPIへ直接リクエストを送ります（API自体がCORS許可されています）
   const url = `https://tsukumijima.net{cityId}`;
 
   try {
@@ -27,9 +26,9 @@ async function getWeather(cityId) {
 
     weatherBox.innerHTML = `
       ${makeDayBlock(today, 0)}
-      <hr style="margin: 1.5em 0; border: 0; border-top: 1px solid #eee;">
+      <hr>
       ${makeDayBlock(tomorrow, 1)}
-      <hr style="margin: 1.5em 0; border: 0; border-top: 1px solid #eee;">
+      <hr>
       ${makeDayBlock(dayAfter, 2)}
     `;
   } catch (e) {
@@ -38,10 +37,8 @@ async function getWeather(cityId) {
   }
 }
 
-/* ===== 1日分の表示（無駄な隙間をなくしてiPadでも見やすく） ===== */
+/* ===== 1日分の表示 ===== */
 function makeDayBlock(day, offset) {
-  if (!day) return `<h2>データがありません</h2>`;
-
   const max = day.temperature.max?.celsius ?? "--";
   const min = day.temperature.min?.celsius ?? "--";
   const rain = getRainText(day.chanceOfRain);
@@ -49,16 +46,14 @@ function makeDayBlock(day, offset) {
   const dateText = makeDateText(offset);
 
   return `
-    <h2 style="margin-top: 0; margin-bottom: 0.6em; color: #333; font-size: 24px;">${dateText}</h2>
-    <div style="font-size: 16px; color: #555; line-height: 1.8;">
-      <p style="margin: 4px 0;">天気：${day.telop} ${getIcon(day.telop)}</p>
-      <p style="margin: 4px 0;">
-        <span style="color:red; font-weight:bold;">最高気温：${max}℃</span> ／ 
-        <span style="color:blue; font-weight:bold;">最低気温：${min}℃</span>
-      </p>
-      <p style="margin: 4px 0;">降水確率：${rain}</p>
-      <p style="margin: 12px 0 0 0; font-size: 18px; color: #2e7d32;"><b>${advice}</b></p>
-    </div>
+    <h2>${dateText}</h2>
+    <p>天気：${day.telop} ${getIcon(day.telop)}</p>
+
+    <p><span style="color:red;">最高気温：${max}℃</span></p>
+    <p><span style="color:blue;">最低気温：${min}℃</span></p>
+
+    <p>降水確率：${rain}</p>
+    <p><b>${advice}</b></p>
   `;
 }
 
@@ -79,7 +74,6 @@ function makeDateText(offset) {
 
 /* ===== 天気アイコン ===== */
 function getIcon(weather) {
-  if (!weather) return "🌈";
   if (weather.includes("晴")) return "☀️";
   if (weather.includes("曇")) return "⛅";
   if (weather.includes("雨")) return "🌧️";
@@ -87,50 +81,25 @@ function getIcon(weather) {
   return "🌈";
 }
 
-/* ===== 降水確率（「%」マーク混在バグや「--」によるNaNを完全に防ぐ） ===== */
+/* ===== 降水確率（最大値） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
-  // 各時間帯のデータを配列としてまとめる
-  const rawValues = [
+  const arr = [
     obj.T00_06,
     obj.T06_12,
     obj.T12_18,
     obj.T18_24
-  ];
+  ].filter(v => v && v !== "--");
 
-  const validNumbers = [];
+  if (arr.length === 0) return "--%";
 
-  for (let i = 0; i < rawValues.length; i++) {
-    let val = rawValues[i];
-    
-    // データが存在し、かつ「--」ではない有効な予報データのみを抽出
-    if (val !== undefined && val !== null && val !== "--" && val !== "") {
-      // 文字列として届く「"10%"」から「%」を除去して「"10"」にする
-      if (typeof val === "string") {
-        val = val.replace("%", "");
-      }
-      
-      const num = parseInt(val);
-      // 正しく数字に変換できたら配列に追加
-      if (!isNaN(num)) {
-        validNumbers.push(num);
-      }
-    }
-  }
-
-  // 夜間などで、これ以降の有効な数字が一つもない場合は「--%」を返す
-  if (validNumbers.length === 0) return "--%";
-
-  // 正常な数字の中から最も高い降水確率を出力
-  const max = Math.max(...validNumbers);
+  const max = Math.max(...arr.map(v => parseInt(v)));
   return `${max}%`;
 }
 
 /* ===== 🐞虫取り判定 ===== */
 function getBugAdvice(weather, maxTemp) {
-  if (!weather) return "△ 情報不足で判断できません";
-  
   if (weather.includes("雨") || weather.includes("雪")) {
     return "✕ 雨・雪は虫取りに不向きです";
   }
