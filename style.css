@@ -1,107 +1,84 @@
-/* 全体のリセットと背景 */
+/* 全体の背景（優しい緑と空色） */
 body {
   font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-  background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+  background: linear-gradient(to bottom, #d0f0c0, #f0f8ff);
+  text-align: center;
+  padding: 2em;
   margin: 0;
-  padding: 1.5rem;
-  color: #2c3e50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
+  color: #333;
 }
 
-/* タイトル */
 h1 {
-  font-size: 2.5rem;
-  color: #1b5e20;
-  margin: 1rem 0;
-  text-shadow: 2px 2px 0px #ffffff;
-  letter-spacing: 2px;
-}
-
-/* フォーム周り */
-.selector-group {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 0.8rem 1.5rem;
-  border-radius: 50px;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  margin-bottom: 1.5rem;
-}
-
-label {
-  font-weight: bold;
   color: #2e7d32;
+  margin-bottom: 1em;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+}
+
+/* フォームの見た目をすっきり */
+label, select {
+  font-size: 16px;
+  margin-bottom: 1.5em;
+  font-weight: bold;
 }
 
 select {
-  font-size: 16px;
-  padding: 0.4rem 1rem;
-  border: 2px solid #a5d6a7;
-  border-radius: 20px;
+  padding: 5px 15px;
+  border-radius: 8px;
+  border: 2px solid #2e7d32;
   background: white;
-  color: #1b5e20;
-  font-weight: bold;
-  cursor: pointer;
-  outline: none;
+  color: #2e7d32;
 }
 
-/* 🌟 天気表示エリア（ここをグリッド構造にして縦伸びを完全防止！） */
+/* 🌟 天気全体の囲い：iPadの大画面を活かして、3日分を横並びに整列させます！ */
 #weather {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 950px;
-  margin: 1rem auto;
-}
-
-/* 3日分の各カード（図鑑のプレート風デザイン） */
-#weather .day-card {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  padding: 1.5rem;
-  border: 3px solid #e8f5e9;
-  transition: transform 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-#weather .day-card:hover {
-  transform: translateY(-5px);
-  border-color: #a5d6a7;
-}
-
-/* カード内の見出し */
-#weather h2 {
-  font-size: 1.3rem;
-  color: #ffffff;
-  background: #2e7d32;
-  margin: -1.5rem -1.5rem 1rem -1.5rem;
-  padding: 0.8rem;
-  text-align: center;
-}
-
-/* 各ステータスのレイアウト */
-.status-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0.6rem 0;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px dashed #e0e0e0;
-  font-size: 1rem;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 1.5em;
+  max-width: 1000px;
+  margin: 1.5em auto;
+  padding: 0 10px;
 }
 
-/* 虫取りアドバイス専用の目立つボックス */
-.advice-box {
-  background: #f1f8e9;
-  border-left: 5px solid #4caf50;
-  padding: 0.8rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 1.1rem;
+/* 🌟 3日分のそれぞれの塊を、綺麗な白い立体カードデザインにします */
+#weather h2, 
+#weather p {
   text-align: center;
+  margin: 0.5em 0;
+}
+
+/* 日付の見出しをオシャレな深緑にして引き締めます */
+#weather h2 {
+  font-size: 1.4rem;
+  color: #1b5e20;
+  border-bottom: 3px solid #a5d6a7;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+/* 太字のアドバイス（◎とても虫取りに〜など）を目立たせる */
+#weather b {
+  display: block;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f1f8e9;
+  border-radius: 8px;
+  color: #2e7d32;
+  font-size: 1.1rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* ❌ JavaScriptが勝手に出してしまう区切り線を、CSSの力で完全に消し去ります！ */
+#weather hr {
+  display: none;
+}
+
+/* スマホや画面が細い時のための、自動縦並び切り替え機能（レスポンシブ） */
+@media (max-width: 768px) {
+  #weather {
+    flex-direction: column;
+    align-items: center;
+  }
 }
