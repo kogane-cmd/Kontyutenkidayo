@@ -1,27 +1,107 @@
+/* 全体のリセットと背景 */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to bottom, #d0f0c0, #f0f8ff);
-  text-align: center;
-  padding: 2em;
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+  margin: 0;
+  padding: 1.5rem;
+  color: #2c3e50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
 }
 
+/* タイトル */
 h1 {
+  font-size: 2.5rem;
+  color: #1b5e20;
+  margin: 1rem 0;
+  text-shadow: 2px 2px 0px #ffffff;
+  letter-spacing: 2px;
+}
+
+/* フォーム周り */
+.selector-group {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+}
+
+label {
+  font-weight: bold;
   color: #2e7d32;
-  margin-bottom: 1em;
 }
 
-label, select {
+select {
   font-size: 16px;
-  margin-bottom: 1em;
+  padding: 0.4rem 1rem;
+  border: 2px solid #a5d6a7;
+  border-radius: 20px;
+  background: white;
+  color: #1b5e20;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
 }
 
-.card {
+/* 🌟 天気表示エリア（ここをグリッド構造にして縦伸びを完全防止！） */
+#weather {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 950px;
+  margin: 1rem auto;
+}
+
+/* 3日分の各カード（図鑑のプレート風デザイン） */
+#weather .day-card {
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 2em;
-  max-width: 500px;
-  margin: 1em auto;
-  font-size: 18px;
-  line-height: 1.6;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  border: 3px solid #e8f5e9;
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#weather .day-card:hover {
+  transform: translateY(-5px);
+  border-color: #a5d6a7;
+}
+
+/* カード内の見出し */
+#weather h2 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  background: #2e7d32;
+  margin: -1.5rem -1.5rem 1rem -1.5rem;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+/* 各ステータスのレイアウト */
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.6rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed #e0e0e0;
+  font-size: 1rem;
+}
+
+/* 虫取りアドバイス専用の目立つボックス */
+.advice-box {
+  background: #f1f8e9;
+  border-left: 5px solid #4caf50;
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  text-align: center;
 }
