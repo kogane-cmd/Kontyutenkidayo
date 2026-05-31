@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
 async function getWeather(cityId) {
   weatherBox.innerHTML = "読み込み中...";
 
-  const url = `https://tsukumijima.net{cityId}`;
+  const url = `https://tsukumijima.net/api/forecast/city/{cityId}`;
 
   try {
     const res = await fetch(url, { cache: "no-store" });
