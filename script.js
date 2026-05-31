@@ -24,11 +24,12 @@ async function getWeather(cityId) {
     const tomorrow = data.forecasts[1];
     const dayAfter = data.forecasts[2]; // 明後日
 
+    // <hr>の上下の無駄な隙間をCSSで少し狭く調整しています
     weatherBox.innerHTML = `
       ${makeDayBlock(today, 0)}
-      <hr>
+      <hr style="margin: 1.5em 0; border: 0; border-top: 1px solid #eee;">
       ${makeDayBlock(tomorrow, 1)}
-      <hr>
+      <hr style="margin: 1.5em 0; border: 0; border-top: 1px solid #eee;">
       ${makeDayBlock(dayAfter, 2)}
     `;
   } catch (e) {
@@ -37,7 +38,7 @@ async function getWeather(cityId) {
   }
 }
 
-/* ===== 1日分の表示 ===== */
+/* ===== 1日分の表示（タグを集約して縦伸びを解消） ===== */
 function makeDayBlock(day, offset) {
   const max = day.temperature.max?.celsius ?? "--";
   const min = day.temperature.min?.celsius ?? "--";
@@ -45,15 +46,18 @@ function makeDayBlock(day, offset) {
   const advice = getBugAdvice(day.telop, max);
   const dateText = makeDateText(offset);
 
+  // <p>タグの細切れを1つのdivにまとめ、余白（margin）をキュッと縮めました
   return `
-    <h2>${dateText}</h2>
-    <p>天気：${day.telop} ${getIcon(day.telop)}</p>
-
-    <p><span style="color:red;">最高気温：${max}℃</span></p>
-    <p><span style="color:blue;">最低気温：${min}℃</span></p>
-
-    <p>降水確率：${rain}</p>
-    <p><b>${advice}</b></p>
+    <h2 style="margin-top: 0; margin-bottom: 0.6em; color: #333; font-size: 24px;">${dateText}</h2>
+    <div style="font-size: 16px; color: #555; line-height: 1.8;">
+      <p style="margin: 4px 0;">天気：${day.telop} ${getIcon(day.telop)}</p>
+      <p style="margin: 4px 0;">
+        <span style="color:red; font-weight:bold;">最高気温：${max}℃</span> ／ 
+        <span style="color:blue; font-weight:bold;">最低気温：${min}℃</span>
+      </p>
+      <p style="margin: 4px 0;">降水確率：${rain}</p>
+      <p style="margin: 12px 0 0 0; font-size: 18px; color: #2e7d32;"><b>${advice}</b></p>
+    </div>
   `;
 }
 
@@ -81,20 +85,29 @@ function getIcon(weather) {
   return "🌈";
 }
 
-/* ===== 降水確率（最大値） ===== */
+/* ===== 降水確率（最大値・「--」除外安全版） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
-  const arr = [
+  // 4つの時間帯のデータを配列としてまとめる
+  const rawValues = [
     obj.T00_06,
     obj.T06_12,
     obj.T12_18,
     obj.T18_24
-  ].filter(v => v && v !== "--");
+  ];
 
-  if (arr.length === 0) return "--%";
+  // 過去の時間帯になって「--」に変わったデータや、不穏な空データを完全に排除
+  const validNumbers = rawValues
+    .filter(v => v !== undefined && v !== null && v !== "--" && v !== "")
+    .map(v => parseInt(v))
+    .filter(v => !isNaN(v)); // 数字への変換に失敗したデータも排除
 
-  const max = Math.max(...arr.map(v => parseInt(v)));
+  // 有効な数字（これから先の予報）が1つもなければ、安全にハイフン表記にする
+  if (validNumbers.length === 0) return "--%";
+
+  // 残った数字の中から、その日で最も高い降水確率を割り出す
+  const max = Math.max(...validNumbers);
   return `${max}%`;
 }
 
