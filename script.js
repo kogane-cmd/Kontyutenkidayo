@@ -24,7 +24,6 @@ async function getWeather(cityId) {
     const tomorrow = data.forecasts[1];
     const dayAfter = data.forecasts[2]; // 明後日
 
-    // <hr>の上下の無駄な隙間をCSSで少し狭く調整しています
     weatherBox.innerHTML = `
       ${makeDayBlock(today, 0)}
       <hr style="margin: 1.5em 0; border: 0; border-top: 1px solid #eee;">
@@ -38,7 +37,7 @@ async function getWeather(cityId) {
   }
 }
 
-/* ===== 1日分の表示（タグを集約して縦伸びを解消） ===== */
+/* ===== 1日分の表示 ===== */
 function makeDayBlock(day, offset) {
   const max = day.temperature.max?.celsius ?? "--";
   const min = day.temperature.min?.celsius ?? "--";
@@ -46,7 +45,6 @@ function makeDayBlock(day, offset) {
   const advice = getBugAdvice(day.telop, max);
   const dateText = makeDateText(offset);
 
-  // <p>タグの細切れを1つのdivにまとめ、余白（margin）をキュッと縮めました
   return `
     <h2 style="margin-top: 0; margin-bottom: 0.6em; color: #333; font-size: 24px;">${dateText}</h2>
     <div style="font-size: 16px; color: #555; line-height: 1.8;">
@@ -85,11 +83,11 @@ function getIcon(weather) {
   return "🌈";
 }
 
-/* ===== 降水確率（最大値・「--」除外安全版） ===== */
+/* ===== 降水確率（「%」マーク混在バグを完全に回避する処理） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
-  // 4つの時間帯のデータを配列としてまとめる
+  // 4つの時間帯のデータをまとめて取得
   const rawValues = [
     obj.T00_06,
     obj.T06_12,
@@ -97,16 +95,31 @@ function getRainText(obj) {
     obj.T18_24
   ];
 
-  // 過去の時間帯になって「--」に変わったデータや、不穏な空データを完全に排除
-  const validNumbers = rawValues
-    .filter(v => v !== undefined && v !== null && v !== "--" && v !== "")
-    .map(v => parseInt(v))
-    .filter(v => !isNaN(v)); // 数字への変換に失敗したデータも排除
+  const validNumbers = [];
 
-  // 有効な数字（これから先の予報）が1つもなければ、安全にハイフン表記にする
+  for (let i = 0; i < rawValues.length; i++) {
+    let val = rawValues[i];
+    
+    // データが存在し、かつ「--」ではない場合のみ処理する
+    if (val !== undefined && val !== null && val !== "--" && val !== "") {
+      // 文字列に含まれるかもしれない「%」を消去する（例: "30%" -> "30"）
+      if (typeof val === "string") {
+        val = val.replace("%", "");
+      }
+      
+      const num = parseInt(val);
+      
+      // 有効な数字に変換できた場合のみ、配列に格納する
+      if (!isNaN(num)) {
+        validNumbers.push(num);
+      }
+    }
+  }
+
+  // 有効な数値が一つもない、あるいは深夜にすべての予報が終了した場合は「--%」にする
   if (validNumbers.length === 0) return "--%";
 
-  // 残った数字の中から、その日で最も高い降水確率を割り出す
+  // 正しい数値のみの中から最大値を抽出して出力
   const max = Math.max(...validNumbers);
   return `${max}%`;
 }
