@@ -12,13 +12,19 @@ window.addEventListener("DOMContentLoaded", () => {
 async function getWeather(cityId) {
   weatherBox.innerHTML = "読み込み中...";
 
-  const url = `https://tsukumijima.net{cityId}`;
+  // 1. 取得したい天気予報APIのURL
+  const targetUrl = `https://tsukumijima.net{cityId}`;
+  
+  // 2. iPadやGitHub Pagesでのセキュリティブロックを回避するための仲介プロキシURL
+  const url = `https://allorigins.win{encodeURIComponent(targetUrl)}`;
 
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP Error");
 
-    const data = await res.json();
+    // プロキシを経由した場合、データは「contents」という文字列の箱に入って届きます
+    const wrapper = await res.json();
+    const data = JSON.parse(wrapper.contents); 
 
     const today = data.forecasts[0];
     const tomorrow = data.forecasts[1];
@@ -32,12 +38,12 @@ async function getWeather(cityId) {
       ${makeDayBlock(dayAfter, 2)}
     `;
   } catch (e) {
-    weatherBox.innerHTML = "天気の取得に失敗しました。";
+    weatherBox.innerHTML = "天気情報の取得に失敗しました。";
     console.error(e);
   }
 }
 
-/* ===== 1日分の表示 ===== */
+/* ===== 1日分の表示（スキマを詰めてスマートにする） ===== */
 function makeDayBlock(day, offset) {
   const max = day.temperature.max?.celsius ?? "--";
   const min = day.temperature.min?.celsius ?? "--";
@@ -83,11 +89,10 @@ function getIcon(weather) {
   return "🌈";
 }
 
-/* ===== 降水確率（「%」マーク混在バグを完全に回避する処理） ===== */
+/* ===== 降水確率（「%」マークや時間経過の「--」を完全回避する処理） ===== */
 function getRainText(obj) {
   if (!obj) return "--%";
 
-  // 4つの時間帯のデータをまとめて取得
   const rawValues = [
     obj.T00_06,
     obj.T06_12,
@@ -100,26 +105,23 @@ function getRainText(obj) {
   for (let i = 0; i < rawValues.length; i++) {
     let val = rawValues[i];
     
-    // データが存在し、かつ「--」ではない場合のみ処理する
     if (val !== undefined && val !== null && val !== "--" && val !== "") {
-      // 文字列に含まれるかもしれない「%」を消去する（例: "30%" -> "30"）
+      // 文字列に含まれる「%」を綺麗に消去（例: "30%" -> "30"）
       if (typeof val === "string") {
         val = val.replace("%", "");
       }
       
       const num = parseInt(val);
-      
-      // 有効な数字に変換できた場合のみ、配列に格納する
       if (!isNaN(num)) {
         validNumbers.push(num);
       }
     }
   }
 
-  // 有効な数値が一つもない、あるいは深夜にすべての予報が終了した場合は「--%」にする
+  // 過去の時間帯が過ぎてすべての予報が終了した場合は「--%」にする
   if (validNumbers.length === 0) return "--%";
 
-  // 正しい数値のみの中から最大値を抽出して出力
+  // 正常な数値のみの中から最大の降水確率を割り出す
   const max = Math.max(...validNumbers);
   return `${max}%`;
 }
